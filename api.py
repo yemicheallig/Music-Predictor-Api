@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import joblib
 
@@ -6,6 +7,19 @@ app = FastAPI()
 model = joblib.load("genre_model.pkl")
 label_encoder = joblib.load("label_encoder.pkl")
 model_columns = joblib.load("model_columns.pkl")
+
+origins = [
+    "https://projreminder.com.et",
+    "http://127.0.0.1:5500",  # keep for local testing
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def home():
@@ -25,5 +39,6 @@ def predict(data: dict):
     # Predict
     pred = model.predict(df)[0]
     genre = label_encoder.inverse_transform([pred])[0]
+
 
     return {"predicted_genre": genre}
